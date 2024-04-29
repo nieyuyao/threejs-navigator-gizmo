@@ -25,7 +25,7 @@ import {
 	Euler,
 } from 'three'
 
-interface Options {
+export interface Options {
 	// viewport size of gizmo
 	size: number
 	// background image of trackball
@@ -46,6 +46,12 @@ interface Options {
 	pinterLockMode: boolean
 	// rotate speed
 	rotateSpeed: number
+	// color of xyz axes
+	axesColor: number[]
+	// Fill Colours of six trackballs. The elements represent x, y, z, negX(Negative X), negY(Negative Y), negZ(Negative Z)
+	trackballFillColors: number[]
+	// Stoke Colours of six trackballs. The elements represent x, y, z, negX(Negative X), negY(Negative Y), negZ(Negative Z)
+	trackballStrokeColors: number[]
 }
 
 const DEFAULT_OPTIONS: Options = {
@@ -58,6 +64,23 @@ const DEFAULT_OPTIONS: Options = {
 	navigatorBgOpacity: 0.2,
 	pinterLockMode: false,
 	rotateSpeed: 1,
+	axesColor: [0xff5453, 0x8adb00, 0x2c8fff],
+	trackballFillColors: [
+		0xff3653, // x
+		0x8adb00, // y
+		0x2c8fff, // z,
+		0x61363c, // negX
+		0x485b2e, // negY
+		0x354860, // negZ
+	],
+	trackballStrokeColors: [
+		0xffffff, // x
+		0xffffff, // y
+		0xffffff, // z,
+		0xff3653, // negX
+		0x8adb00, // negX
+		0x2c8fff, // negZ
+	],
 }
 
 const TWO_PI = 2 * Math.PI
@@ -168,6 +191,8 @@ export class NavigatorGizmo extends EventDispatcher {
 
 	private isPointerLocked = false
 
+	private supportPointerLock = false
+
 	private animationData: AnimationData = {
 		last: 0,
 		targetUp: new Vector3(),
@@ -205,6 +230,7 @@ export class NavigatorGizmo extends EventDispatcher {
 		this.createTrackBalls()
 		this.bindEventListener()
 		this.objectRadian = object.position.sub(this.targetPosition).length()
+		this.supportPointerLock = typeof this.renderer.domElement.requestPointerLock === 'function'
 	}
 
 	setTarget(target: Object3D) {
@@ -298,15 +324,16 @@ export class NavigatorGizmo extends EventDispatcher {
 	}
 
 	private createAxes() {
+		const [ xColor, yColor, zColor ] = this.options.axesColor
 		// X
-		const x = this.createAxis(0xff5453)
+		const x = this.createAxis(xColor)
 		x.rotateZ(Math.PI / 2)
 		x.translateY(-0.45)
 		// Y
-		const y = this.createAxis(0x8adb00)
+		const y = this.createAxis(yColor)
 		y.translateY(0.45)
 		// Z
-		const z = this.createAxis(0x2c8fff)
+		const z = this.createAxis(zColor)
 		z.rotateX(Math.PI / 2)
 		z.translateY(0.45)
 	}
@@ -320,11 +347,27 @@ export class NavigatorGizmo extends EventDispatcher {
 		const negY = y.clone().multiplyScalar(-1)
 		const negZ = z.clone().multiplyScalar(-1)
 		const textColor = new Color().setHex(options.trackballTextColor).getStyle()
+		const [
+			xFillColor,
+			yFillColor,
+			zFillColor,
+			negXFillColor,
+			negYFillColor,
+			negZFillColor,
+		] = options.trackballFillColors
+		const [
+			xStrokeColor,
+			yStrokeColor,
+			zStrokeColor,
+			negXStrokeColor,
+			negYStrokeColor,
+			negZStrokeColor,
+		] = options.trackballStrokeColors
 		// X
 		this.createTrackBall({
 			name: 'X',
-			fill: 'rgb(255, 54, 83)',
-			stroke: '#fff',
+			fill: new Color().setHex(xFillColor).getStyle(),
+			stroke: new Color().setHex(xStrokeColor).getStyle(),
 			text: 'X',
 			textColor,
 			direction: x,
@@ -336,8 +379,8 @@ export class NavigatorGizmo extends EventDispatcher {
 		// -X
 		this.createTrackBall({
 			name: '-X',
-			fill: '#61363c',
-			stroke: 'rgb(255, 54, 83)',
+			fill: new Color().setHex(negXFillColor).getStyle(),
+			stroke: new Color().setHex(negXStrokeColor).getStyle(),
 			text: '',
 			textColor,
 			direction: negX,
@@ -349,8 +392,8 @@ export class NavigatorGizmo extends EventDispatcher {
 		// Y
 		this.createTrackBall({
 			name: 'Y',
-			fill: 'rgb(138, 219, 0)',
-			stroke: '#fff',
+			fill: new Color().setHex(yFillColor).getStyle(),
+			stroke: new Color().setHex(yStrokeColor).getStyle(),
 			text: 'Y',
 			textColor,
 			direction: y,
@@ -362,8 +405,8 @@ export class NavigatorGizmo extends EventDispatcher {
 		// -Y
 		this.createTrackBall({
 			name: '-Y',
-			fill: '#485b2e',
-			stroke: 'rgb(138, 219, 0)',
+			fill: new Color().setHex(negYFillColor).getStyle(),
+			stroke: new Color().setHex(negYStrokeColor).getStyle(),
 			text: '',
 			textColor,
 			direction: negY,
@@ -375,8 +418,8 @@ export class NavigatorGizmo extends EventDispatcher {
 		// Z
 		this.createTrackBall({
 			name: 'Z',
-			fill: 'rgb(44, 143, 255)',
-			stroke: '#fff',
+			fill: new Color().setHex(zFillColor).getStyle(),
+			stroke: new Color().setHex(zStrokeColor).getStyle(),
 			text: 'Z',
 			textColor,
 			direction: z,
@@ -388,8 +431,8 @@ export class NavigatorGizmo extends EventDispatcher {
 		// -Z
 		this.createTrackBall({
 			name: '-Z',
-			fill: '#354860',
-			stroke: 'rgb(44, 143, 255)',
+			fill: new Color().setHex(negZFillColor).getStyle(),
+			stroke: new Color().setHex(negZStrokeColor).getStyle(),
 			text: '',
 			textColor,
 			direction: negZ,
@@ -503,8 +546,11 @@ export class NavigatorGizmo extends EventDispatcher {
 	private updateHovered(mousePosition: Vector2Like) {
 		const hovered = this.findHoveredBall(mousePosition) as Sprite
 		if (hovered) {
-			this.handleHover(hovered)
-			this.hovered = hovered
+			if (hovered !== this.hovered) {
+				this.onLeave()
+				this.hovered = hovered
+				this.handleHover(hovered)
+			}
 		} else {
 			this.onLeave()
 			this.hovered = null
@@ -527,14 +573,13 @@ export class NavigatorGizmo extends EventDispatcher {
 		if (this.animating || !this.alreadyMousedown) {
 			return
 		}
-		if (this.options.pinterLockMode) {
+		if (this.options.pinterLockMode && this.supportPointerLock) {
 			// wether pointer is locked
 			if (document.pointerLockElement !== this.renderer.domElement) {
 				this.renderer.domElement.requestPointerLock()
 				this.isPointerLocked = true
 			}
 		}
-
 		if (this.isPointerLocked) {
 			this.mouseDownPosition.x += event.movementX
 			this.mouseDownPosition.y += event.movementY
@@ -544,7 +589,6 @@ export class NavigatorGizmo extends EventDispatcher {
 				event.target as HTMLElement
 			)
 		}
-
 		this.drag = true
 		const size = this.options.size
 		this.curMouseCoords.copy(getClientNormalCoords(mousemovePosition, size, size))
@@ -689,7 +733,7 @@ export class NavigatorGizmo extends EventDispatcher {
 			options.text = ''
 			options.textColor = ''
 		} else {
-			options.textColor = '#000'
+			options.textColor = new Color().setHex(this.options.trackballTextColor).getStyle()
 		}
 		// @ts-ignore
 		ball.material = this.renderTrackBall(canvas, options)

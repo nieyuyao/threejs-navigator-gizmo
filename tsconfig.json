@@ -5,6 +5,8 @@
     "moduleResolution": "node",
     "module": "esnext",
     "lib": ["ES2016", "DOM"],
+		"declaration": true,
+		"declarationDir": "dist",
     "esModuleInterop": true,
     "noUnusedParameters": true,
     "noUnusedLocals": true,
@@ -15,5 +17,5 @@
     "sourceMap": false,
 		"rootDir": "."
 	},
-	"include": ["./**/*.ts", "./**/*.tsx", "./**/*.d.ts"]
+	"include": ["./**/*.ts", "./**/*.d.ts"]
 }
