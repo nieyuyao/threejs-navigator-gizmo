@@ -1,0 +1,35 @@
+{
+  "name": "threejs-navigator-gizmo",
+  "version": "0.0.1",
+  "description": "A 3D navigator gizmo for ThreeJS",
+  "main": "index.js",
+  "scripts": {
+		"build:esm": "tsc -m ES6 --outDir ./dist/esm",
+		"build:cjs": "tsc -m commonjs --outDir ./dist/cjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nieyuyao/threejs-navigator-gizmo.git"
+  },
+  "keywords": [
+    "threejs",
+    "3d",
+    "rotate",
+    "navigator",
+    "gizmo",
+    "viewhelper"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nieyuyao/threejs-navigator-gizmo/issues"
+  },
+  "homepage": "https://github.com/nieyuyao/threejs-navigator-gizmo#readme",
+  "dependencies": {
+    "three": "^0.164.1"
+  },
+  "devDependencies": {
+    "@types/three": "^0.164.0",
+    "typescript": "^5.4.5"
+  }
+}
