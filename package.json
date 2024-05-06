@@ -1,6 +1,6 @@
 {
   "name": "threejs-navigator-gizmo",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A 3D navigator gizmo for ThreeJS",
   "main": "dist/cjs/index.js",
 	"module": "dist/esm/index.js",
@@ -33,11 +33,11 @@
     "url": "https://github.com/nieyuyao/threejs-navigator-gizmo/issues"
   },
   "homepage": "https://github.com/nieyuyao/threejs-navigator-gizmo#readme",
-  "dependencies": {
-    "three": "^0.164.1"
-  },
+	"peerDependencies": {
+		"three": ">=0.150.0"
+	},
   "devDependencies": {
-    "@types/three": "^0.164.0",
+    "@types/three": "^0.150.0",
     "typescript": "^5.4.5"
   }
 }

@@ -15,7 +15,6 @@ import {
 	Vector2,
 	Quaternion,
 	PerspectiveCamera,
-	Vector2Like,
 	CylinderGeometry,
 	ShaderMaterial,
 	DoubleSide,
@@ -121,7 +120,7 @@ interface AnimationData {
 }
 
 // Gets NDC Coords
-const getNdcCoords = (mousePosition: Vector2Like, width: number, height: number): Vector2 => {
+const getNdcCoords = (mousePosition: Vector2, width: number, height: number): Vector2 => {
 	const p = new Vector2(1, 1)
 	p.x = (2 * mousePosition.x) / width - 1
 	p.y = 1 - (2 * mousePosition.y) / height
@@ -129,7 +128,7 @@ const getNdcCoords = (mousePosition: Vector2Like, width: number, height: number)
 }
 
 const getClientNormalCoords = (
-	mousePosition: Vector2Like,
+	mousePosition: Vector2,
 	width: number,
 	height: number
 ): Vector2 => {
@@ -485,7 +484,7 @@ export class NavigatorGizmo extends EventDispatcher {
 		this.discBounding = [0.14 * size, 0.86 * size, 0.14 * size, 0.86 * size]
 	}
 
-	private mouseEnterBounding(mousePos: Vector2Like) {
+	private mouseEnterBounding(mousePos: Vector2) {
 		const { discBounding } = this
 		return (
 			(mousePos.x - discBounding[0]) * (discBounding[1] - mousePos.x) > 0 &&
@@ -493,7 +492,7 @@ export class NavigatorGizmo extends EventDispatcher {
 		)
 	}
 
-	private findHoveredBall(mousePos: Vector2Like) {
+	private findHoveredBall(mousePos: Vector2) {
 		const coords = getNdcCoords(mousePos, this.options.size, this.options.size)
 		const intersects = this.getIntersects(coords)
 		return intersects.map((it) => it.object).find((obj) => obj instanceof Sprite)
@@ -503,12 +502,12 @@ export class NavigatorGizmo extends EventDispatcher {
 		clientX: number,
 		clientY: number,
 		target: HTMLElement
-	): Vector2Like => {
+	): Vector2 => {
 		const br = (target as HTMLElement).getBoundingClientRect()
-		return {
-			x: clientX - br.x - this.options.paddingX,
-			y: clientY - br.y - (br.height - this.options.paddingY - this.options.size),
-		}
+		return new Vector2(
+			clientX - br.x - this.options.paddingX,
+			clientY - br.y - (br.height - this.options.paddingY - this.options.size),
+		)
 	}
 
 	private getIntersects(p: Vector2) {
@@ -543,7 +542,7 @@ export class NavigatorGizmo extends EventDispatcher {
 		}
 	}
 
-	private updateHovered(mousePosition: Vector2Like) {
+	private updateHovered(mousePosition: Vector2) {
 		const hovered = this.findHoveredBall(mousePosition) as Sprite
 		if (hovered) {
 			if (hovered !== this.hovered) {
