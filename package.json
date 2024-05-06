@@ -22,7 +22,8 @@
     "viewhelper",
 		"trackballcontrol",
 		"blender",
-		"three"
+		"three",
+		"orbit"
   ],
   "author": "nieyuyao",
   "license": "MIT",

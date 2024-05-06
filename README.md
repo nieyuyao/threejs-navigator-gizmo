@@ -45,3 +45,4 @@ const render = () => {
 | axesColor | Colours of xyz axes | `number[]` | `[0xff5453, 0x8adb00, 0x2c8fff]` |
 | trackballFillColors | Fill Colours of six trackballs. The elements represent x, y, z, negX(Negative X), negY(Negative Y), negZ(Negative Z) | `number[]` | `[0xff3653, 0x8adb00, 0x2c8fff, 0x61363c, 0x485b2e, 0x354860]` |
 | trackballStrokeColors | Stroke Colours of six trackballs. The elements represent x, y, z, negX(Negative X), negY(Negative Y), negZ(Negative Z)| `number[]` | `[0xffffff, 0xffffff, 0xffffff, 0xff3653, 0x8adb00, 0xff3653]` |
+| standalone | Create one standalone canvas to render gizmo | `boolean` | `false` |
