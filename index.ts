@@ -1,5 +1,5 @@
 import {
-	type WebGLRenderer,
+	WebGLRenderer,
 	Object3D,
 	OrthographicCamera,
 	SpriteMaterial,
@@ -28,7 +28,7 @@ export interface Options {
 	// viewport size of gizmo
 	size: number
 	// background image of trackball
-	trackballBgImage?: HTMLImageElement,
+	trackballBgImage?: HTMLImageElement
 	// text color of trackball
 	trackballTextColor: number
 	// text color if hover of trackball
@@ -47,10 +47,14 @@ export interface Options {
 	rotateSpeed: number
 	// color of xyz axes
 	axesColor: number[]
-	// Fill Colours of six trackballs. The elements represent x, y, z, negX(Negative X), negY(Negative Y), negZ(Negative Z)
+	// Fill Colours of six trackballs.
+	// The elements represent x, y, z, negX(Negative X), negY(Negative Y), negZ(Negative Z)
 	trackballFillColors: number[]
-	// Stoke Colours of six trackballs. The elements represent x, y, z, negX(Negative X), negY(Negative Y), negZ(Negative Z)
+	// Stoke Colours of six trackballs.
+	// The elements represent x, y, z, negX(Negative X), negY(Negative Y), negZ(Negative Z)
 	trackballStrokeColors: number[]
+	// create a standalone canvas to render gizmo
+	standalone: boolean
 }
 
 const DEFAULT_OPTIONS: Options = {
@@ -80,6 +84,7 @@ const DEFAULT_OPTIONS: Options = {
 		0x8adb00, // negX
 		0x2c8fff, // negZ
 	],
+	standalone: false,
 }
 
 const TWO_PI = 2 * Math.PI
@@ -127,11 +132,7 @@ const getNdcCoords = (mousePosition: Vector2, width: number, height: number): Ve
 	return p
 }
 
-const getClientNormalCoords = (
-	mousePosition: Vector2,
-	width: number,
-	height: number
-): Vector2 => {
+const getClientNormalCoords = (mousePosition: Vector2, width: number, height: number): Vector2 => {
 	const p = new Vector2(1, 1)
 	p.x = mousePosition.x / width
 	p.y = 1 - mousePosition.y / height
@@ -213,6 +214,8 @@ export class NavigatorGizmo extends EventDispatcher {
 
 	private hovered: Sprite | null = null
 
+	private scopeRenderer: WebGLRenderer
+
 	constructor(
 		object: PerspectiveCamera | OrthographicCamera,
 		renderer: WebGLRenderer,
@@ -227,9 +230,28 @@ export class NavigatorGizmo extends EventDispatcher {
 		this.createDisc()
 		this.createAxes()
 		this.createTrackBalls()
-		this.bindEventListener()
 		this.objectRadian = object.position.sub(this.targetPosition).length()
 		this.supportPointerLock = typeof this.renderer.domElement.requestPointerLock === 'function'
+
+		if (this.options.standalone) {
+			// create renderer
+			const scopeCanvas = createCanvas()
+
+			scopeCanvas.width = this.options.size
+			scopeCanvas.height = this.options.size
+			this.scopeRenderer = new WebGLRenderer({ canvas: scopeCanvas })
+			this.scopeRenderer.setPixelRatio(window.devicePixelRatio)
+			renderer.domElement.parentElement?.appendChild(scopeCanvas)
+
+			scopeCanvas.style.cssText = `
+				position: absolute;
+				left: ${this.options.paddingX}px;
+				bottom: ${this.options.paddingY}px;
+				width: ${this.options.size}px;
+				height: ${this.options.size}px;
+			`
+		}
+		this.bindEventListener()
 	}
 
 	setTarget(target: Object3D) {
@@ -323,7 +345,7 @@ export class NavigatorGizmo extends EventDispatcher {
 	}
 
 	private createAxes() {
-		const [ xColor, yColor, zColor ] = this.options.axesColor
+		const [xColor, yColor, zColor] = this.options.axesColor
 		// X
 		const x = this.createAxis(xColor)
 		x.rotateZ(Math.PI / 2)
@@ -346,14 +368,8 @@ export class NavigatorGizmo extends EventDispatcher {
 		const negY = y.clone().multiplyScalar(-1)
 		const negZ = z.clone().multiplyScalar(-1)
 		const textColor = new Color().setHex(options.trackballTextColor).getStyle()
-		const [
-			xFillColor,
-			yFillColor,
-			zFillColor,
-			negXFillColor,
-			negYFillColor,
-			negZFillColor,
-		] = options.trackballFillColors
+		const [xFillColor, yFillColor, zFillColor, negXFillColor, negYFillColor, negZFillColor] =
+			options.trackballFillColors
 		const [
 			xStrokeColor,
 			yStrokeColor,
@@ -412,7 +428,7 @@ export class NavigatorGizmo extends EventDispatcher {
 			up: z,
 			targetQuat: new Quaternion().setFromEuler(new Euler(Math.PI * 0.5, 0, 0)),
 			canvas: createCanvas(),
-			bg: options.trackballBgImage
+			bg: options.trackballBgImage,
 		})
 		// Z
 		this.createTrackBall({
@@ -425,7 +441,7 @@ export class NavigatorGizmo extends EventDispatcher {
 			up: y,
 			targetQuat: new Quaternion(),
 			canvas: createCanvas(),
-			bg: options.trackballBgImage
+			bg: options.trackballBgImage,
 		})
 		// -Z
 		this.createTrackBall({
@@ -438,7 +454,7 @@ export class NavigatorGizmo extends EventDispatcher {
 			targetQuat: new Quaternion().setFromEuler(new Euler(0, Math.PI, 0)),
 			up: y,
 			canvas: createCanvas(),
-			bg: options.trackballBgImage
+			bg: options.trackballBgImage,
 		})
 	}
 
@@ -498,15 +514,13 @@ export class NavigatorGizmo extends EventDispatcher {
 		return intersects.map((it) => it.object).find((obj) => obj instanceof Sprite)
 	}
 
-	private getMousePosition = (
-		clientX: number,
-		clientY: number,
-		target: HTMLElement
-	): Vector2 => {
+	private getMousePosition = (clientX: number, clientY: number, target: HTMLElement): Vector2 => {
 		const br = (target as HTMLElement).getBoundingClientRect()
+		const offsetX = this.options.standalone ? 0 : this.options.paddingX
+		const offsetY = this.options.standalone ? 0 : this.options.paddingY
 		return new Vector2(
-			clientX - br.x - this.options.paddingX,
-			clientY - br.y - (br.height - this.options.paddingY - this.options.size),
+			clientX - br.x - offsetX,
+			clientY - br.y - (br.height - offsetY - this.options.size)
 		)
 	}
 
@@ -573,9 +587,10 @@ export class NavigatorGizmo extends EventDispatcher {
 			return
 		}
 		if (this.options.pinterLockMode && this.supportPointerLock) {
+			const domElement = this.options.standalone ? this.scopeRenderer.domElement : this.renderer.domElement
 			// wether pointer is locked
-			if (document.pointerLockElement !== this.renderer.domElement) {
-				this.renderer.domElement.requestPointerLock()
+			if (document.pointerLockElement !== domElement) {
+				domElement.requestPointerLock()
 				this.isPointerLocked = true
 			}
 		}
@@ -739,19 +754,21 @@ export class NavigatorGizmo extends EventDispatcher {
 	}
 
 	private bindEventListener() {
-		const { renderer } = this
-		renderer.domElement.addEventListener('pointerdown', this.handlePointerdown)
-		renderer.domElement.addEventListener('pointermove', this.handlePointermove)
-		renderer.domElement.addEventListener('pointerup', this.handlePointerup)
-		renderer.domElement.addEventListener('pointerleave', this.handlePointerup)
+		const { renderer, options } = this
+		const domElement = options.standalone ? this.scopeRenderer.domElement : renderer.domElement
+		domElement.addEventListener('pointerdown', this.handlePointerdown)
+		domElement.addEventListener('pointermove', this.handlePointermove)
+		domElement.addEventListener('pointerup', this.handlePointerup)
+		domElement.addEventListener('pointerleave', this.handlePointerup)
 	}
 
 	private unbindEventListener() {
-		const { renderer } = this
-		renderer.domElement.removeEventListener('pointerdown', this.handlePointerdown)
-		renderer.domElement.removeEventListener('pointermove', this.handlePointermove)
-		renderer.domElement.removeEventListener('pointerup', this.handlePointerup)
-		renderer.domElement.removeEventListener('pointerleave', this.handlePointerup)
+		const { renderer, options } = this
+		const domElement = options.standalone ? this.scopeRenderer.domElement : renderer.domElement
+		domElement.removeEventListener('pointerdown', this.handlePointerdown)
+		domElement.removeEventListener('pointermove', this.handlePointermove)
+		domElement.removeEventListener('pointerup', this.handlePointerup)
+		domElement.removeEventListener('pointerleave', this.handlePointerup)
 	}
 
 	private syncOrthCamera() {
@@ -761,24 +778,32 @@ export class NavigatorGizmo extends EventDispatcher {
 		orthCamera.up.copy(object.up)
 	}
 
-	update() {
-		const { orthCamera, renderer, scene, options } = this
-		const userViewport = renderer.getViewport(new Vector4())
-		const vp = new Vector4(options.paddingX, options.paddingY, options.size, options.size)
-		renderer.setViewport(vp)
-		// To allow render overlay
-		const userAutoClearSetting = renderer.autoClear
-		renderer.autoClear = false
-		renderer.clearDepth()
+	private render(renderer: WebGLRenderer) {
 		if (this.animating) {
 			const now = Date.now()
 			this.animate(now)
 		}
 		this.syncOrthCamera()
-		renderer.render(scene, orthCamera)
-		// restore
-		renderer.autoClear = userAutoClearSetting
-		renderer.setViewport(userViewport)
+		renderer.render(this.scene, this.orthCamera)
+	}
+
+	update() {
+		const { renderer, options, scopeRenderer } = this
+		if (options.standalone) {
+			this.render(scopeRenderer)
+		} else {
+			const userViewport = renderer.getViewport(new Vector4())
+			const vp = new Vector4(options.paddingX, options.paddingY, options.size, options.size)
+			renderer.setViewport(vp)
+			// To allow render overlay
+			const userAutoClearSetting = renderer.autoClear
+			renderer.autoClear = false
+			renderer.clearDepth()
+			this.render(renderer)
+			// restore
+			renderer.autoClear = userAutoClearSetting
+			renderer.setViewport(userViewport)
+		}
 	}
 
 	dispose() {
@@ -790,5 +815,8 @@ export class NavigatorGizmo extends EventDispatcher {
 		})
 		this.scene.clear()
 		this.unbindEventListener()
+		if (this.scopeRenderer) {
+			this.scopeRenderer.domElement.parentElement?.removeChild(this.scopeRenderer.domElement)
+		}
 	}
 }
