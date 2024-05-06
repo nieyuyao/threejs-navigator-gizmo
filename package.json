@@ -1,6 +1,6 @@
 {
   "name": "threejs-navigator-gizmo",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A 3D navigator gizmo for ThreeJS",
   "main": "dist/cjs/index.js",
 	"module": "dist/esm/index.js",
@@ -19,7 +19,10 @@
     "rotate",
     "navigator",
     "gizmo",
-    "viewhelper"
+    "viewhelper",
+		"trackballcontrol",
+		"blender",
+		"three"
   ],
   "author": "nieyuyao",
   "license": "MIT",
