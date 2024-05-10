@@ -250,7 +250,7 @@ export class NavigatorGizmo extends EventDispatcher {
 				this.scopeRenderer.setClearColor(this.options.clearColor)
 			}
 			if (typeof this.options.clearAlpha === 'number') {
-				this.scopeRenderer.setClearColor(this.options.clearAlpha)
+				this.scopeRenderer.setClearAlpha(this.options.clearAlpha)
 			}
 			renderer.domElement.parentElement?.appendChild(scopeCanvas)
 
