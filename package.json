@@ -1,11 +1,12 @@
 {
   "name": "threejs-navigator-gizmo",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A 3D navigator gizmo for ThreeJS",
   "main": "dist/cjs/index.js",
 	"module": "dist/esm/index.js",
 	"types": "dist/index.d.ts",
   "scripts": {
+		"build": "npm run build:esm && npm run build:cjs",
 		"build:esm": "tsc -m ES6 --outDir ./dist/esm",
 		"build:cjs": "tsc -m commonjs --outDir ./dist/cjs"
   },
