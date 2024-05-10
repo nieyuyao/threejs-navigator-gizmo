@@ -55,6 +55,11 @@ export interface Options {
 	trackballStrokeColors: number[]
 	// create a standalone canvas to render gizmo
 	standalone: boolean
+	// Sets clear color. Only works if standalone is enabled.
+	clearColor?: number
+	// Sets clear alpha. Ranges from 0 to 1.
+	// Only works if standalone is enabled.
+	clearAlpha?: number
 }
 
 const DEFAULT_OPTIONS: Options = {
@@ -241,6 +246,12 @@ export class NavigatorGizmo extends EventDispatcher {
 			scopeCanvas.height = this.options.size
 			this.scopeRenderer = new WebGLRenderer({ canvas: scopeCanvas })
 			this.scopeRenderer.setPixelRatio(window.devicePixelRatio)
+			if (typeof this.options.clearColor === 'number') {
+				this.scopeRenderer.setClearColor(this.options.clearColor)
+			}
+			if (typeof this.options.clearAlpha === 'number') {
+				this.scopeRenderer.setClearColor(this.options.clearAlpha)
+			}
 			renderer.domElement.parentElement?.appendChild(scopeCanvas)
 
 			scopeCanvas.style.cssText = `

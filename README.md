@@ -46,3 +46,5 @@ const render = () => {
 | trackballFillColors | Fill Colours of six trackballs. The elements represent x, y, z, negX(Negative X), negY(Negative Y), negZ(Negative Z) | `number[]` | `[0xff3653, 0x8adb00, 0x2c8fff, 0x61363c, 0x485b2e, 0x354860]` |
 | trackballStrokeColors | Stroke Colours of six trackballs. The elements represent x, y, z, negX(Negative X), negY(Negative Y), negZ(Negative Z)| `number[]` | `[0xffffff, 0xffffff, 0xffffff, 0xff3653, 0x8adb00, 0xff3653]` |
 | standalone | Create one standalone canvas to render gizmo | `boolean` | `false` |
+| clearColor | Sets clear color. Only works if standalone is enabled | number | - |
+| clearAlpha | Sets clear alpha. Ranges from 0 to 1. Only works if standalone is enabled | number | - |
