@@ -1,6 +1,6 @@
 {
   "name": "threejs-navigator-gizmo",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A 3D navigator gizmo for ThreeJS",
   "main": "dist/cjs/index.js",
 	"module": "dist/esm/index.js",
